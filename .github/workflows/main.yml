@@ -37,19 +37,25 @@ jobs:
     - name: Deploy to S3
       run: |
         echo "Uploading files to S3..."
+        # Upload HTML files with correct content-type
+        find ./dist -name "*.html" -exec aws s3 cp {} s3://${{ secrets.S3BUCKETNAME }}/ --content-type "text/html" \;
+        
+        # Upload other files (if any) with default content-type detection
         aws s3 sync ./dist s3://${{ secrets.S3BUCKETNAME }} \
           --delete \
           --exact-timestamps \
-          --exclude ".DS_Store"
+          --exclude ".DS_Store" \
+          --exclude "*.html"
           
     - name: Set cache headers for HTML files
       run: |
-        # HTML files without cache
+        # HTML files without cache and correct content-type
         aws s3 cp s3://${{ secrets.S3BUCKETNAME }} s3://${{ secrets.S3BUCKETNAME }} \
           --recursive \
           --exclude "*" \
           --include "*.html" \
           --metadata-directive REPLACE \
+          --content-type "text/html" \
           --cache-control "no-cache"
           
     - name: Show deployment info
