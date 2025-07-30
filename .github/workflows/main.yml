@@ -25,19 +25,19 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.AWSACESSKEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWSSECRETACESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
         
     - name: Verify AWS connection
       run: |
         aws sts get-caller-identity
-        aws s3 ls s3://${{ secrets.S3_BUCKET_NAME }} || echo "Bucket exists"
+        aws s3 ls s3://${{ secrets.S3BUCKETNAME }} || echo "Bucket exists"
         
     - name: Deploy to S3
       run: |
         echo "Uploading files to S3..."
-        aws s3 sync ./dist s3://${{ secrets.S3_BUCKET_NAME }} \
+        aws s3 sync ./dist s3://${{ secrets.S3BUCKETNAME }} \
           --delete \
           --exact-timestamps \
           --exclude ".DS_Store"
@@ -45,7 +45,7 @@ jobs:
     - name: Set cache headers for HTML files
       run: |
         # HTML files without cache
-        aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }} s3://${{ secrets.S3_BUCKET_NAME }} \
+        aws s3 cp s3://${{ secrets.S3BUCKETNAME }} s3://${{ secrets.S3BUCKETNAME }} \
           --recursive \
           --exclude "*" \
           --include "*.html" \
@@ -55,4 +55,4 @@ jobs:
     - name: Show deployment info
       run: |
         echo "Deployment completed!"
-        echo "Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com"
+        echo "Website URL: http://${{ secrets.S3BUCKETNAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com"
