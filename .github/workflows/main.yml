@@ -5,11 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-
   workflow_dispatch:
-
-env:
-  NODE_VERSION: '18'
 
 jobs:
   deploy:
@@ -19,29 +15,12 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-      
-    - name: Install dependencies
-      run: |
-        if [ -f package.json ]; then
-          npm ci
-        else
-          echo "No package.json found, skipping npm install"
-        fi
         
     - name: Build project
       run: |
-        # Para proyectos simples, solo copiar archivos
+        echo "Preparing files for deployment..."
         mkdir -p dist
         cp -r src/* dist/
-        
-        # Para proyectos con build (descomenta si necesitas):
-        # npm run build
         
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -61,21 +40,11 @@ jobs:
         aws s3 sync ./dist s3://${{ secrets.S3_BUCKET_NAME }} \
           --delete \
           --exact-timestamps \
-          --exclude ".DS_Store" \
-          --exclude "*.md"
+          --exclude ".DS_Store"
           
-    - name:  Set cache headers
+    - name: Set cache headers for HTML files
       run: |
-        # CSS y JS con cache largo
-        aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }} s3://${{ secrets.S3_BUCKET_NAME }} \
-          --recursive \
-          --exclude "*" \
-          --include "*.css" \
-          --include "*.js" \
-          --metadata-directive REPLACE \
-          --cache-control "max-age=31536000"
-          
-        # HTML sin cache
+        # HTML files without cache
         aws s3 cp s3://${{ secrets.S3_BUCKET_NAME }} s3://${{ secrets.S3_BUCKET_NAME }} \
           --recursive \
           --exclude "*" \
@@ -83,7 +52,7 @@ jobs:
           --metadata-directive REPLACE \
           --cache-control "no-cache"
           
-    - name:  Show website URL
+    - name: Show deployment info
       run: |
-        echo "" Deployment completed!"
+        echo "Deployment completed!"
         echo "Website URL: http://${{ secrets.S3_BUCKET_NAME }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com"
