@@ -23,7 +23,6 @@ jobs:
         
     - name: Build project (si necesitas compilar)
       run: |
-        # Ejemplo para proyecto Node.js
         npm install
         npm run build
         
